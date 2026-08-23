@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.cache/
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Build / packaging
+build/
+dist/
+*.egg
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Secrets
+.env
+.env.*
+
+# Large or generated data (keep folder, ignore contents)
+data/*
+!data/.gitkeep
+
+# Result logs can be committed later on purpose; ignore bulky artifacts
+results/*.html
+results/*.png
+results/*.jpg
+results/*.pkl
+results/*.joblib
