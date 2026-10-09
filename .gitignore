@@ -30,10 +30,9 @@ dist/
 data/*
 !data/.gitkeep
 
-# Result logs can be committed later on purpose; ignore bulky artifacts
+# Result logs and the constructed-experiment chart are committed.
+# Ignore bulky generated artefacts only.
 results/*.html
-results/*.png
-results/*.jpg
 results/*.pkl
 results/*.joblib
 

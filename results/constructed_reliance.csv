@@ -1,0 +1,6 @@
+injection_rate,n_injected,test_accuracy,classifier_reliance
+1.0,150,1.0,0.0856
+0.75,112,1.0,0.0737
+0.5,75,1.0,0.0616
+0.25,38,1.0,0.0433
+0.0,0,1.0,

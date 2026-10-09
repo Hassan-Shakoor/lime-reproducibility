@@ -1,0 +1,18 @@
+Downloading Heart Disease (Cleveland) dataset from UCI...
+Dataset shape: (303, 14)
+Missing values: {'ca': 4, 'thal': 2}
+Class balance (0 = no disease, 1 = disease): {0: 164, 1: 139}
+
+Test accuracy: 0.9180
+
+True class: no disease
+Predicted class: no disease
+Predicted probabilities (no disease, disease): [0.91666667 0.08333333]
+
+LIME explanation (feature, weight):
+  ca <= 0.00: 0.2064
+  thal <= 3.00: 0.1883
+  cp <= 2.25: 0.0950
+  0.00 < sex <= 1.00: -0.0830
+  slope <= 1.00: 0.0631
+  oldpeak <= 0.00: 0.0599

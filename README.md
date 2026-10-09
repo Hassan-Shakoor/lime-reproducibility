@@ -19,9 +19,9 @@ This repository reproduces the official LIME implementation from Ribeiro, Singh,
 - [x] Tabular feasibility test (Iris + random forest, 500 trees)
 - [x] Text feasibility test (20 Newsgroups + TF-IDF + random forest)
 - [x] Heart Disease experiment (UCI Cleveland, 303 rows, RF 300)
+- [x] Constructed corpus / artefact-injection experiment logged in `results/`
 - [x] Interactive architecture diagram (Archify)
 - [ ] Assignment 1 proposal files added to `proposal/`
-- [ ] Constructed corpus / artefact-injection experiment logged in `results/`
 
 ## Repository layout
 
@@ -33,9 +33,17 @@ comp8240-lime-project/
 ├── scripts/
 │   ├── test_lime_tabular.py           # Iris tabular explanation
 │   ├── test_lime_text.py              # 20 Newsgroups text explanation
-│   └── test_lime_heart_disease.py     # UCI Heart Disease explanation
-├── data/                              # project datasets (empty for now)
-├── results/                           # output logs (empty for now)
+│   ├── test_lime_heart_disease.py     # UCI Heart Disease explanation
+│   ├── 01_build_constructed_reviews.py
+│   ├── 02_inject_artefacts.py
+│   ├── 03_train_classifiers.py
+│   └── 04_explain_and_plot.py
+├── data/                              # generated locally (gitignored)
+├── results/
+│   ├── heart_disease.txt
+│   ├── constructed_reliance.csv
+│   ├── constructed_lime.csv
+│   └── constructed_artefact_chart.png
 ├── notes/
 │   └── feasibility_notes.md           # environment notes + recorded results
 └── .archify/
@@ -49,7 +57,7 @@ comp8240-lime-project/
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install lime scikit-learn pandas numpy certifi
+pip install lime scikit-learn pandas numpy matplotlib certifi
 ```
 
 On Python 3.12+ you may hit `ModuleNotFoundError: No module named 'imp'` from the `pyDOE2` dependency. The feasibility run used Python 3.11.9 and did not need that patch. See `notes/feasibility_notes.md`.
@@ -61,9 +69,13 @@ source venv/bin/activate
 python3 scripts/test_lime_tabular.py
 python3 scripts/test_lime_text.py
 python3 scripts/test_lime_heart_disease.py
+python3 scripts/01_build_constructed_reviews.py
+python3 scripts/02_inject_artefacts.py
+python3 scripts/03_train_classifiers.py
+python3 scripts/04_explain_and_plot.py
 ```
 
-The text test downloads the 20 Newsgroups subset the first time it runs. The Heart Disease script downloads the Cleveland file from the UCI Machine Learning Repository. Both need internet on first run.
+The text test downloads the 20 Newsgroups subset the first time it runs. The Heart Disease script downloads the Cleveland file from the UCI Machine Learning Repository. Both need internet on first run. The constructed-corpus scripts 01–04 write `data/constructed/` locally, then log metrics and the chart under `results/`.
 
 On some macOS Python.org installs, set SSL certificates via `certifi`. `scripts/test_lime_text.py` does this automatically.
 
@@ -99,5 +111,9 @@ The diagram shows:
 |---|---|---|---|---|
 | Tabular | Iris, instance 5 | Random forest (500 trees) | Accuracy 1.00 | Petal length ≤ 1.50 dominates the setosa prediction |
 | Text | 20 Newsgroups, doc 83 | TF-IDF + random forest | F1 0.92 | Header tokens (`Host`, `Posting`, `NNTP`) drive the atheism call |
+| Project tabular | UCI Heart Disease, test instance 3 | Random forest (300 trees) | Accuracy 0.918 | No blocked vessels (`ca ≤ 0`) and a normal thallium test drive “no disease”; male sex pushes the other way |
+| Project text | Constructed reviews, token `zzqref` | TF-IDF + logistic regression | Accuracy 1.00 | LIME \|weight\| on the token falls with injection rate: 0.123 (#1), 0.109 (#1), 0.091 (#1), 0.064 (#4) at 100/75/50/25% |
 
 The text result is the paper’s well-known point: a high score can still rest on spurious cues. Full numbers and the macOS SSL download fix are in `notes/feasibility_notes.md`.
+
+The constructed experiment injects the meaningless token `zzqref` into 100, 75, 50, 25, and 0 percent of the negative reviews. Classifier reliance and LIME’s weight on that token fall together as the correlation weakens. 0% is the control (no token is injected, so there is nothing for LIME to find) and is omitted from `results/constructed_artefact_chart.png`. These reviews are templated; real review text and variance across seeds are next.
