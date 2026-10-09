@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "COMP8240 LIME Experiment Runtime",
+    "locale": "en",
+    "output": ".archify/architecture-lime-experiments-20261003-233639/lime-experiments.html",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "researcher",
+      "type": "external",
+      "label": "Researcher",
+      "sublabel": "COMP8240 student",
+      "icon": "person",
+      "pos": [40, 430],
+      "size": [150, 70]
+    },
+    {
+      "id": "scripts",
+      "type": "frontend",
+      "label": "Experiment scripts",
+      "sublabel": "feasibility + project CLI",
+      "pos": [340, 422],
+      "size": [200, 86]
+    },
+    {
+      "id": "rf_iris",
+      "type": "backend",
+      "label": "Iris RF 500",
+      "sublabel": "bundled, no network",
+      "pos": [700, 422],
+      "size": [200, 86]
+    },
+    {
+      "id": "lime_engine",
+      "type": "backend",
+      "label": "LIME engine",
+      "sublabel": "LimeBase Ridge 0.2.0.1",
+      "tag": "black-box only",
+      "pos": [1060, 422],
+      "size": [210, 90]
+    },
+    {
+      "id": "notes",
+      "type": "database",
+      "label": "Recorded results",
+      "sublabel": "as_list weights",
+      "pos": [1430, 422],
+      "size": [180, 86]
+    },
+    {
+      "id": "certifi_gate",
+      "type": "security",
+      "label": "certifi SSL gate",
+      "sublabel": "SSL_CERT_FILE",
+      "tag": "macOS CA",
+      "pos": [340, 90],
+      "size": [200, 70]
+    },
+    {
+      "id": "figshare",
+      "type": "cloud",
+      "label": "Figshare 20NG",
+      "sublabel": "atheism vs christian",
+      "pos": [700, 90],
+      "size": [200, 70]
+    },
+    {
+      "id": "tfidf_nb",
+      "type": "backend",
+      "label": "TF-IDF + Naive Bayes",
+      "sublabel": "MultinomialNB",
+      "pos": [1060, 82],
+      "size": [210, 86]
+    },
+    {
+      "id": "uci_heart",
+      "type": "cloud",
+      "label": "UCI Heart Disease",
+      "sublabel": "Cleveland 303 rows",
+      "pos": [340, 680],
+      "size": [200, 70]
+    },
+    {
+      "id": "rf_heart",
+      "type": "backend",
+      "label": "Heart RF 300",
+      "sublabel": "predict_proba",
+      "pos": [1060, 672],
+      "size": [200, 86]
+    },
+    {
+      "id": "constructed",
+      "type": "database",
+      "label": "Constructed corpus",
+      "sublabel": "controlled text",
+      "pos": [340, 900],
+      "size": [200, 70]
+    },
+    {
+      "id": "artefact",
+      "type": "backend",
+      "label": "Artefact injection",
+      "sublabel": "5 intensity levels",
+      "pos": [700, 892],
+      "size": [200, 86]
+    },
+    {
+      "id": "logreg",
+      "type": "backend",
+      "label": "Logistic Regression",
+      "sublabel": "text classifier",
+      "pos": [1430, 892],
+      "size": [180, 86]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Local Python 3.11.9 venv (not committed)",
+      "wraps": ["scripts", "rf_iris", "lime_engine", "notes", "certifi_gate", "tfidf_nb", "rf_heart", "constructed", "artefact", "logreg"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "run-scripts",
+      "from": "researcher",
+      "to": "scripts",
+      "label": "run python3 scripts",
+      "variant": "emphasis"
+    },
+    {
+      "id": "fit-iris",
+      "from": "scripts",
+      "to": "rf_iris",
+      "label": "fit Iris RF 500"
+    },
+    {
+      "id": "iris-to-lime",
+      "from": "rf_iris",
+      "to": "lime_engine",
+      "label": "explain_instance"
+    },
+    {
+      "id": "record-weights",
+      "from": "lime_engine",
+      "to": "notes",
+      "label": "print as_list"
+    },
+    {
+      "id": "set-ssl",
+      "from": "scripts",
+      "to": "certifi_gate",
+      "label": "set SSL_CERT_FILE",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "allow-download",
+      "from": "certifi_gate",
+      "to": "figshare",
+      "label": "first-run download",
+      "variant": "security"
+    },
+    {
+      "id": "corpus-to-nb",
+      "from": "figshare",
+      "to": "tfidf_nb",
+      "label": "20NG into NB"
+    },
+    {
+      "id": "nb-to-lime",
+      "from": "tfidf_nb",
+      "to": "lime_engine",
+      "label": "text explain",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "launch-heart",
+      "from": "scripts",
+      "to": "uci_heart",
+      "label": "fetch Cleveland",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "heart-to-rf",
+      "from": "uci_heart",
+      "to": "rf_heart",
+      "label": "fit RF 300"
+    },
+    {
+      "id": "heart-to-lime",
+      "from": "rf_heart",
+      "to": "lime_engine",
+      "label": "heart explain",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "launch-constructed",
+      "from": "scripts",
+      "to": "constructed",
+      "label": "build corpus",
+      "fromSide": "left",
+      "toSide": "left"
+    },
+    {
+      "id": "inject-artefacts",
+      "from": "constructed",
+      "to": "artefact",
+      "label": "5 artefact levels"
+    },
+    {
+      "id": "fit-lr",
+      "from": "artefact",
+      "to": "logreg",
+      "label": "fit LR"
+    },
+    {
+      "id": "lr-to-lime",
+      "from": "logreg",
+      "to": "lime_engine",
+      "label": "constructed explain",
+      "fromSide": "left",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Each dataset has its own classifier",
+      "items": [
+        "Iris uses RandomForestClassifier with 500 trees on the bundled sklearn table",
+        "20 Newsgroups uses TfidfVectorizer + Multinomial Naive Bayes, not the Iris forest",
+        "UCI Heart Disease (Cleveland, 303 rows) trains a separate RF with 300 trees"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Project datasets for the video",
+      "items": [
+        "Heart Disease is downloaded from the UCI ML Repository, then explained with LimeTabularExplainer",
+        "The constructed corpus injects header-style artefacts at 5 intensity levels, then fits logistic regression",
+        "Both project paths still only hand LIME a predict_proba function"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Text path has a real SSL gate",
+      "items": [
+        "First 20 Newsgroups fetch failed on macOS Python.org with CERTIFICATE_VERIFY_FAILED",
+        "The text script sets SSL_CERT_FILE from certifi before fetch_20newsgroups",
+        "Iris never hits the network; Heart Disease hits archive.ics.uci.edu"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "LIME never opens the model",
+      "items": [
+        "explain_instance only needs predict_proba on a raw instance",
+        "The engine perturbs a neighborhood, then calls that same function on the synthetic rows",
+        "LimeBase fits a weighted Ridge; default neighborhood size is 5000 samples"
+      ]
+    }
+  ]
+}

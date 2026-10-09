@@ -36,3 +36,10 @@ results/*.png
 results/*.jpg
 results/*.pkl
 results/*.joblib
+
+# Archify receipts; keep candidate.json + the HTML diagram
+.archify/**/review-*/
+.archify/**/*.finalize.json
+.archify/**/*.finalize-summary.json
+.archify/**/*.browser-check.json
+.archify/**/*.delivery.json

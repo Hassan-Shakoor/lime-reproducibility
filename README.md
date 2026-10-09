@@ -16,11 +16,12 @@ This repository reproduces the official LIME implementation from Ribeiro, Singh,
 
 - [x] Local environment created (`venv`, Python 3.11.9)
 - [x] Official `lime` package installed from source (`0.2.0.1`)
-- [x] Tabular feasibility test (Iris + random forest)
-- [x] Text feasibility test (20 Newsgroups + random forest)
+- [x] Tabular feasibility test (Iris + random forest, 500 trees)
+- [x] Text feasibility test (20 Newsgroups + TF-IDF + random forest)
+- [x] Heart Disease experiment (UCI Cleveland, 303 rows, RF 300)
+- [x] Interactive architecture diagram (Archify)
 - [ ] Assignment 1 proposal files added to `proposal/`
-- [ ] Project datasets added to `data/`
-- [ ] Experiment logs saved to `results/`
+- [ ] Constructed corpus / artefact-injection experiment logged in `results/`
 
 ## Repository layout
 
@@ -28,14 +29,19 @@ This repository reproduces the official LIME implementation from Ribeiro, Singh,
 comp8240-lime-project/
 ├── README.md
 ├── .gitignore
-├── proposal/                       # Assignment 1 (tex + pdf + template)
+├── proposal/                          # Assignment 1 (placeholder)
 ├── scripts/
-│   ├── test_lime_tabular.py        # Iris tabular explanation
-│   └── test_lime_text.py           # 20 Newsgroups text explanation
-├── data/                           # new datasets (empty for now)
-├── results/                        # output logs (empty for now)
-└── notes/
-    └── feasibility_notes.md        # environment notes + recorded results
+│   ├── test_lime_tabular.py           # Iris tabular explanation
+│   ├── test_lime_text.py              # 20 Newsgroups text explanation
+│   └── test_lime_heart_disease.py     # UCI Heart Disease explanation
+├── data/                              # project datasets (empty for now)
+├── results/                           # output logs (empty for now)
+├── notes/
+│   └── feasibility_notes.md           # environment notes + recorded results
+└── .archify/
+    └── architecture-lime-experiments-20261003-233639/
+        ├── lime-experiments.html      # interactive architecture diagram
+        └── candidate.json             # Archify source
 ```
 
 ## Setup
@@ -48,19 +54,46 @@ pip install lime scikit-learn pandas numpy certifi
 
 On Python 3.12+ you may hit `ModuleNotFoundError: No module named 'imp'` from the `pyDOE2` dependency. The feasibility run used Python 3.11.9 and did not need that patch. See `notes/feasibility_notes.md`.
 
-## Run the feasibility tests
+## Run the experiments
 
 ```bash
 source venv/bin/activate
 python3 scripts/test_lime_tabular.py
 python3 scripts/test_lime_text.py
+python3 scripts/test_lime_heart_disease.py
 ```
 
-The text test downloads the 20 Newsgroups subset the first time it runs (internet required).
+The text test downloads the 20 Newsgroups subset the first time it runs. The Heart Disease script downloads the Cleveland file from the UCI Machine Learning Repository. Both need internet on first run.
+
+On some macOS Python.org installs, set SSL certificates via `certifi`. `scripts/test_lime_text.py` does this automatically.
+
+## Architecture diagram
+
+The interactive diagram is:
+
+`.archify/architecture-lime-experiments-20261003-233639/lime-experiments.html`
+
+Serve it over `http://` (not `file://`):
+
+```bash
+cd .archify/architecture-lime-experiments-20261003-233639
+python3 -m http.server 8766
+```
+
+Then open [http://127.0.0.1:8766/lime-experiments.html](http://127.0.0.1:8766/lime-experiments.html).
+
+**Live** walks the experiment hops one edge at a time. **Tutor** (or `U`) steps through Iris, 20 Newsgroups, Heart Disease, and the constructed-corpus branch.
+
+The diagram shows:
+
+| Path | Data | Model | Explainer |
+|---|---|---|---|
+| Feasibility tabular | Iris (bundled) | Random forest, 500 trees | `LimeTabularExplainer` |
+| Feasibility text | 20 Newsgroups (Figshare) | TF-IDF + classifier | `LimeTextExplainer` |
+| Project tabular | UCI Heart Disease, Cleveland 303 | Random forest, 300 trees | `LimeTabularExplainer` |
+| Project text | Constructed corpus, 5 artefact levels | Logistic regression | `LimeTextExplainer` |
 
 ## What we confirmed
-
-Both official tutorial settings work on this machine:
 
 | Test | Data | Model | Score | What LIME returned |
 |---|---|---|---|---|
