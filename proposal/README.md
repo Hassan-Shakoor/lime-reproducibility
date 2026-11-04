@@ -1,9 +1,3 @@
 # Proposal (Assignment 1)
 
-Drop the COMP8240 Assignment 1 files here:
-
-- source (`.tex`)
-- compiled PDF
-- any LNCS / course template files
-
-This folder is a placeholder until those files are added.
+The submitted project proposal: `COMP8240_Assignment1_Project_Proposal_Hassan_Shakoor.pdf` (mark: 18.5/20).
