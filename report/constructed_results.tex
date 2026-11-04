@@ -1,0 +1,33 @@
+% Numbers from results/constructed_binary.json and results/constructed_tfidf.json
+% (5 seeds per condition; mean, with sd in Figure 3).
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+& & \multicolumn{2}{c}{Accuracy (\%)} & Reliance & \multicolumn{2}{c}{LIME (\%)} \\
+\cmidrule(lr){3-4}\cmidrule(lr){6-7}
+Model & Cond. & token & clean & $\Delta$P & top-1 & top-10 \\
+\midrule
+Binary & neg100 & 99.6 & 67.2 & .568 & 100 & 100 \\
+       & neg75  & 92.6 & 82.6 & .278 & 100 & 100 \\
+       & neg50  & 89.9 & 86.2 & .174 & 100 & 100 \\
+       & neg25  & 87.9 & 86.5 & .107 & 99.3 & 100 \\
+       & control& 86.4 & 86.4 & .003 & 0 & 0 \\
+\midrule
+TF-IDF & neg100 & 84.5 & 82.5 & .016 & 0.7 & 74.7 \\
+       & neg75  & 83.9 & 82.5 & .016 & 0 & 70.7 \\
+       & neg50  & 83.5 & 82.6 & .015 & 0.7 & 69.3 \\
+       & neg25  & 83.2 & 82.8 & .012 & 0 & 43.3 \\
+       & control& 82.8 & 82.8 & .001 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Constructed dataset, mean of 5 seeds. Accuracy on the test split as built (``token'') and with the token removed (``clean''). $\Delta$P: mean drop in P(negative) when the token is deleted from an injected review. LIME: share of 30 injected test reviews per seed in which the token is ranked first or in the top ten.}
+\label{tab:constructed}
+\end{table}
+
+Each of the 50 runs (2 models $\times$ 5 conditions $\times$ 5 seeds) trains a logistic regression, and LIME ($K = 10$, 2,000 samples) then explains 30 injected test reviews. I used two feature representations to obtain models that rely on the artefact to very different degrees. In \emph{binary} bag-of-words the token counts as much as any other word. In \emph{TF-IDF}, length normalisation dilutes one token among about 700. Because the models are linear, their true reliance is measurable: the drop in P(negative) when the token is deleted ($\Delta$P).
+
+Table~\ref{tab:constructed} and Figure~\ref{fig:constructed} give the results. \textbf{The binary model reproduces the paper's 20 Newsgroups failure in a controlled form.} When every negative review carries the token, the model scores 99.6\% with it but 67.2\% once it is removed, the same kind of collapse as the original SVM's drop from the 20NG test split to the religion pages. LIME ranks the token \emph{first} in 100\% of these reviews, and still in 99.3\% when only a quarter of negative reviews carry it. In the control, where the token predicts nothing, LIME never lists it. \textbf{The TF-IDF model shows the converse.} The token is that model's largest or near-largest coefficient (largest at neg100 and neg75, third at neg25), yet deleting it changes a prediction by only 0.016, and accuracy with and without it differs by at most 2 points. LIME again reflects this: it almost never ranks the token first, but lists it in the top ten 69--75\% of the time, falling to 43\% at the weakest condition. Across the 20 non-control runs per model, LIME's weight on the token tracks the measured reliance (Pearson $r = 0.98$ binary, $0.94$ TF-IDF; Figure~\ref{fig:constructed}c). For TF-IDF the reliance spans only 0.012--0.016, so that correlation mainly separates the weakest condition from the rest (within neg100--neg50, $r = 0.64$).
+
+These results support both claims on new data. LIME is faithful (C1): its weight follows how much each model actually uses the artefact, not how strongly the artefact correlates with the label in the data, since the label correlation is identical for the two models. It also supports detecting untrustworthy models (C2): whenever the model relies heavily on the artefact (binary neg100, losing 32 accuracy points without it), LIME ranks the artefact first. LIME tracks reliance rather than the accuracy cost, so it also ranks the token first at binary neg25, where removing it costs only 1.4 points; judging whether a flagged feature matters still needs a held-out check. The evaluation goes beyond the replication in one respect. The paper could only \emph{show} that header words appear in explanations; here the size of the spurious effect is known, so LIME's sensitivity can be measured as a function of it.

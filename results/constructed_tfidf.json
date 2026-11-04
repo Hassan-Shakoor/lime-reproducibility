@@ -1,0 +1,553 @@
+{
+  "settings": {
+    "n_explain": 30,
+    "num_samples": 2000,
+    "model": "tfidf"
+  },
+  "summary": {
+    "neg100": {
+      "acc_with_artefact": {
+        "mean": 0.845,
+        "sd": 0.012549900398011132
+      },
+      "acc_clean": {
+        "mean": 0.8254999999999999,
+        "sd": 0.010770329614269016
+      },
+      "token_coef": {
+        "mean": -4.258578172959817,
+        "sd": 0.026493694387394257
+      },
+      "token_coef_rank": {
+        "mean": 1.0,
+        "sd": 0.0
+      },
+      "mean_prob_drop": {
+        "mean": 0.015650097569168925,
+        "sd": 0.0004383054996661647
+      },
+      "detect_at_1": {
+        "mean": 0.006666666666666666,
+        "sd": 0.013333333333333332
+      },
+      "detect_at_3": {
+        "mean": 0.06666666666666667,
+        "sd": 0.03651483716701108
+      },
+      "detect_at_10": {
+        "mean": 0.7466666666666667,
+        "sd": 0.07774602526460404
+      },
+      "mean_abs_lime_weight": {
+        "mean": 0.024625349894543805,
+        "sd": 0.002652864905581135
+      }
+    },
+    "neg75": {
+      "acc_with_artefact": {
+        "mean": 0.8394999999999999,
+        "sd": 0.011000000000000018
+      },
+      "acc_clean": {
+        "mean": 0.8245000000000001,
+        "sd": 0.00913783344124854
+      },
+      "token_coef": {
+        "mean": -3.6818815454960534,
+        "sd": 0.03485610363898402
+      },
+      "token_coef_rank": {
+        "mean": 1.0,
+        "sd": 0.0
+      },
+      "mean_prob_drop": {
+        "mean": 0.015688406742978275,
+        "sd": 0.0004716545584588322
+      },
+      "detect_at_1": {
+        "mean": 0.0,
+        "sd": 0.0
+      },
+      "detect_at_3": {
+        "mean": 0.04666666666666667,
+        "sd": 0.026666666666666665
+      },
+      "detect_at_10": {
+        "mean": 0.7066666666666667,
+        "sd": 0.07717224601860152
+      },
+      "mean_abs_lime_weight": {
+        "mean": 0.023246306078394195,
+        "sd": 0.0021153726288282455
+      }
+    },
+    "neg50": {
+      "acc_with_artefact": {
+        "mean": 0.835,
+        "sd": 0.007582875444051535
+      },
+      "acc_clean": {
+        "mean": 0.826,
+        "sd": 0.008000000000000009
+      },
+      "token_coef": {
+        "mean": -2.9369017587487027,
+        "sd": 0.056415081971037506
+      },
+      "token_coef_rank": {
+        "mean": 1.4,
+        "sd": 0.4898979485566356
+      },
+      "mean_prob_drop": {
+        "mean": 0.015153149126088538,
+        "sd": 0.0006536935277423226
+      },
+      "detect_at_1": {
+        "mean": 0.006666666666666666,
+        "sd": 0.013333333333333332
+      },
+      "detect_at_3": {
+        "mean": 0.06666666666666668,
+        "sd": 0.04216370213557839
+      },
+      "detect_at_10": {
+        "mean": 0.6933333333333332,
+        "sd": 0.06463573143221774
+      },
+      "mean_abs_lime_weight": {
+        "mean": 0.0232445061534892,
+        "sd": 0.002137899780016954
+      }
+    },
+    "neg25": {
+      "acc_with_artefact": {
+        "mean": 0.8315000000000001,
+        "sd": 0.009695359714832666
+      },
+      "acc_clean": {
+        "mean": 0.828,
+        "sd": 0.01017349497468791
+      },
+      "token_coef": {
+        "mean": -1.9185488135064102,
+        "sd": 0.03613822279109179
+      },
+      "token_coef_rank": {
+        "mean": 3.0,
+        "sd": 0.0
+      },
+      "mean_prob_drop": {
+        "mean": 0.01225003361511539,
+        "sd": 0.0004532831050572088
+      },
+      "detect_at_1": {
+        "mean": 0.0,
+        "sd": 0.0
+      },
+      "detect_at_3": {
+        "mean": 0.013333333333333332,
+        "sd": 0.016329931618554522
+      },
+      "detect_at_10": {
+        "mean": 0.4333333333333334,
+        "sd": 0.029814239699997188
+      },
+      "mean_abs_lime_weight": {
+        "mean": 0.012635227500654855,
+        "sd": 0.0006577494516582811
+      }
+    },
+    "control": {
+      "acc_with_artefact": {
+        "mean": 0.8285,
+        "sd": 0.009565563234854512
+      },
+      "acc_clean": {
+        "mean": 0.8285,
+        "sd": 0.009565563234854512
+      },
+      "token_coef": {
+        "mean": -0.163962017538755,
+        "sd": 0.03462259814385455
+      },
+      "token_coef_rank": {
+        "mean": 2102.0,
+        "sd": 662.115095734873
+      },
+      "mean_prob_drop": {
+        "mean": 0.0005755378903589714,
+        "sd": 0.00010621683001877284
+      },
+      "detect_at_1": {
+        "mean": 0.0,
+        "sd": 0.0
+      },
+      "detect_at_3": {
+        "mean": 0.0,
+        "sd": 0.0
+      },
+      "detect_at_10": {
+        "mean": 0.0,
+        "sd": 0.0
+      },
+      "mean_abs_lime_weight": {
+        "mean": 0.0,
+        "sd": 0.0
+      }
+    },
+    "pearson_lime_weight_vs_prob_drop": 0.9553071878749697,
+    "pearson_noncontrol": 0.9373865388117443
+  },
+  "runs": [
+    {
+      "seed": 0,
+      "condition": "control",
+      "acc_with_artefact": 0.8425,
+      "acc_clean": 0.8425,
+      "token_coef": -0.12314198038114581,
+      "token_coef_rank": 3048,
+      "mean_prob_drop": 0.00044608326454283475,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.0,
+      "detect_at_10": 0.0,
+      "mean_abs_lime_weight": 0.0
+    },
+    {
+      "seed": 1,
+      "condition": "control",
+      "acc_with_artefact": 0.8225,
+      "acc_clean": 0.8225,
+      "token_coef": -0.22587586161676332,
+      "token_coef_rank": 1047,
+      "mean_prob_drop": 0.0007618926134580973,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.0,
+      "detect_at_10": 0.0,
+      "mean_abs_lime_weight": 0.0
+    },
+    {
+      "seed": 2,
+      "condition": "control",
+      "acc_with_artefact": 0.8275,
+      "acc_clean": 0.8275,
+      "token_coef": -0.14410504689321021,
+      "token_coef_rank": 2442,
+      "mean_prob_drop": 0.0005088656236432326,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.0,
+      "detect_at_10": 0.0,
+      "mean_abs_lime_weight": 0.0
+    },
+    {
+      "seed": 3,
+      "condition": "control",
+      "acc_with_artefact": 0.815,
+      "acc_clean": 0.815,
+      "token_coef": -0.15630947458418618,
+      "token_coef_rank": 2131,
+      "mean_prob_drop": 0.0005657516689697817,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.0,
+      "detect_at_10": 0.0,
+      "mean_abs_lime_weight": 0.0
+    },
+    {
+      "seed": 4,
+      "condition": "control",
+      "acc_with_artefact": 0.835,
+      "acc_clean": 0.835,
+      "token_coef": -0.17037772421846945,
+      "token_coef_rank": 1842,
+      "mean_prob_drop": 0.0005950962811809113,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.0,
+      "detect_at_10": 0.0,
+      "mean_abs_lime_weight": 0.0
+    },
+    {
+      "seed": 0,
+      "condition": "neg100",
+      "acc_with_artefact": 0.855,
+      "acc_clean": 0.8375,
+      "token_coef": -4.241203095904889,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.016063948415543455,
+      "n_explained": 30,
+      "detect_at_1": 0.03333333333333333,
+      "detect_at_3": 0.03333333333333333,
+      "detect_at_10": 0.7,
+      "mean_abs_lime_weight": 0.024683418636354867
+    },
+    {
+      "seed": 1,
+      "condition": "neg100",
+      "acc_with_artefact": 0.84,
+      "acc_clean": 0.8125,
+      "token_coef": -4.260098709186047,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.015105763145107462,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.06666666666666667,
+      "detect_at_10": 0.7333333333333333,
+      "mean_abs_lime_weight": 0.02422613411044065
+    },
+    {
+      "seed": 2,
+      "condition": "neg100",
+      "acc_with_artefact": 0.855,
+      "acc_clean": 0.8325,
+      "token_coef": -4.2655913025189784,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.015773663686357412,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.13333333333333333,
+      "detect_at_10": 0.8333333333333334,
+      "mean_abs_lime_weight": 0.02737079534435123
+    },
+    {
+      "seed": 3,
+      "condition": "neg100",
+      "acc_with_artefact": 0.8225,
+      "acc_clean": 0.8125,
+      "token_coef": -4.223520374218463,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.016142275828380258,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.03333333333333333,
+      "detect_at_10": 0.8333333333333334,
+      "mean_abs_lime_weight": 0.026930187979129844
+    },
+    {
+      "seed": 4,
+      "condition": "neg100",
+      "acc_with_artefact": 0.8525,
+      "acc_clean": 0.8325,
+      "token_coef": -4.302477382970709,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.015164836770456052,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.06666666666666667,
+      "detect_at_10": 0.6333333333333333,
+      "mean_abs_lime_weight": 0.01991621340244243
+    },
+    {
+      "seed": 0,
+      "condition": "neg25",
+      "acc_with_artefact": 0.8475,
+      "acc_clean": 0.845,
+      "token_coef": -1.9023552136170552,
+      "token_coef_rank": 3,
+      "mean_prob_drop": 0.012636013449565291,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.03333333333333333,
+      "detect_at_10": 0.4,
+      "mean_abs_lime_weight": 0.011654556179387938
+    },
+    {
+      "seed": 1,
+      "condition": "neg25",
+      "acc_with_artefact": 0.8275,
+      "acc_clean": 0.8225,
+      "token_coef": -1.9745041621686066,
+      "token_coef_rank": 3,
+      "mean_prob_drop": 0.012200906772994836,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.0,
+      "detect_at_10": 0.4666666666666667,
+      "mean_abs_lime_weight": 0.01353127363719132
+    },
+    {
+      "seed": 2,
+      "condition": "neg25",
+      "acc_with_artefact": 0.8325,
+      "acc_clean": 0.825,
+      "token_coef": -1.9091942240222175,
+      "token_coef_rank": 3,
+      "mean_prob_drop": 0.011987772788604965,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.0,
+      "detect_at_10": 0.4,
+      "mean_abs_lime_weight": 0.012303896722651392
+    },
+    {
+      "seed": 3,
+      "condition": "neg25",
+      "acc_with_artefact": 0.8175,
+      "acc_clean": 0.815,
+      "token_coef": -1.939309215835639,
+      "token_coef_rank": 3,
+      "mean_prob_drop": 0.012846918598901434,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.0,
+      "detect_at_10": 0.4666666666666667,
+      "mean_abs_lime_weight": 0.013161220435056409
+    },
+    {
+      "seed": 4,
+      "condition": "neg25",
+      "acc_with_artefact": 0.8325,
+      "acc_clean": 0.8325,
+      "token_coef": -1.8673812518885333,
+      "token_coef_rank": 3,
+      "mean_prob_drop": 0.01157855646551042,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.03333333333333333,
+      "detect_at_10": 0.43333333333333335,
+      "mean_abs_lime_weight": 0.012525190528987222
+    },
+    {
+      "seed": 0,
+      "condition": "neg50",
+      "acc_with_artefact": 0.845,
+      "acc_clean": 0.8375,
+      "token_coef": -2.854457263682587,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.015466363923723794,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.03333333333333333,
+      "detect_at_10": 0.7333333333333333,
+      "mean_abs_lime_weight": 0.023181804079110212
+    },
+    {
+      "seed": 1,
+      "condition": "neg50",
+      "acc_with_artefact": 0.8325,
+      "acc_clean": 0.8175,
+      "token_coef": -2.945838447582019,
+      "token_coef_rank": 2,
+      "mean_prob_drop": 0.014343211431307443,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.0,
+      "detect_at_10": 0.6333333333333333,
+      "mean_abs_lime_weight": 0.020184448242379686
+    },
+    {
+      "seed": 2,
+      "condition": "neg50",
+      "acc_with_artefact": 0.835,
+      "acc_clean": 0.825,
+      "token_coef": -2.8953493970656057,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.015352271047113128,
+      "n_explained": 30,
+      "detect_at_1": 0.03333333333333333,
+      "detect_at_3": 0.1,
+      "detect_at_10": 0.6333333333333333,
+      "mean_abs_lime_weight": 0.024277025643791413
+    },
+    {
+      "seed": 3,
+      "condition": "neg50",
+      "acc_with_artefact": 0.8225,
+      "acc_clean": 0.8175,
+      "token_coef": -2.9758532486650697,
+      "token_coef_rank": 2,
+      "mean_prob_drop": 0.016107722799434367,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.1,
+      "detect_at_10": 0.8,
+      "mean_abs_lime_weight": 0.02655176501484975
+    },
+    {
+      "seed": 4,
+      "condition": "neg50",
+      "acc_with_artefact": 0.84,
+      "acc_clean": 0.8325,
+      "token_coef": -3.013010436748234,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.014496176428863965,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.1,
+      "detect_at_10": 0.6666666666666666,
+      "mean_abs_lime_weight": 0.022027487787314916
+    },
+    {
+      "seed": 0,
+      "condition": "neg75",
+      "acc_with_artefact": 0.845,
+      "acc_clean": 0.835,
+      "token_coef": -3.6297623463063897,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.015916565846332,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.06666666666666667,
+      "detect_at_10": 0.6333333333333333,
+      "mean_abs_lime_weight": 0.022045911797181992
+    },
+    {
+      "seed": 1,
+      "condition": "neg75",
+      "acc_with_artefact": 0.835,
+      "acc_clean": 0.815,
+      "token_coef": -3.6726615718326037,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.01550144726539121,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.0,
+      "detect_at_10": 0.6,
+      "mean_abs_lime_weight": 0.01988667264702732
+    },
+    {
+      "seed": 2,
+      "condition": "neg75",
+      "acc_with_artefact": 0.8475,
+      "acc_clean": 0.8275,
+      "token_coef": -3.686039279246656,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.015178401511525334,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.06666666666666667,
+      "detect_at_10": 0.7666666666666667,
+      "mean_abs_lime_weight": 0.024443115940640792
+    },
+    {
+      "seed": 3,
+      "condition": "neg75",
+      "acc_with_artefact": 0.82,
+      "acc_clean": 0.8125,
+      "token_coef": -3.682001440269362,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.016495210194755958,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.06666666666666667,
+      "detect_at_10": 0.8,
+      "mean_abs_lime_weight": 0.02605883334050733
+    },
+    {
+      "seed": 4,
+      "condition": "neg75",
+      "acc_with_artefact": 0.85,
+      "acc_clean": 0.8325,
+      "token_coef": -3.7389430898252587,
+      "token_coef_rank": 1,
+      "mean_prob_drop": 0.015350408896886878,
+      "n_explained": 30,
+      "detect_at_1": 0.0,
+      "detect_at_3": 0.03333333333333333,
+      "detect_at_10": 0.7333333333333333,
+      "mean_abs_lime_weight": 0.02379699666661354
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+lime==0.2.0.1
+scikit-learn==1.9.0
+numpy==2.4.6
+scipy>=1.10
+pandas>=2.0
+matplotlib>=3.7
+certifi
+anthropic        # optional: 07_llm_judge.py run --provider anthropic
+openai           # optional: 07_llm_judge.py run --provider openai (used for the report)

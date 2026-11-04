@@ -1,0 +1,267 @@
+\documentclass[11pt]{article}
+\usepackage[final]{acl}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{xcolor}
+
+% Values still to be filled from the author's own runs are shown in red.
+\newcommand{\R}[1]{\textcolor{red}{#1}}
+\newcommand{\tok}[1]{\texttt{#1}}
+
+\title{Reproducing and Extending LIME:\\Do Local Explanations Still Expose Spurious Features?}
+
+\author{Muhammad Hassan Shakoor Rana \\
+  School of Computing, Macquarie University \\
+  \texttt{muhammadhassanshakoor.rana@students.mq.edu.au}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+LIME \citep{ribeiro2016why} explains a single prediction of any classifier by fitting a sparse linear model to the classifier's behaviour around that input. Its paper makes two central claims: the explanations are faithful to the model, and they help people notice when a model should not be trusted. I replicate both on the original data with the authors' released library, then test them on two new existing datasets (UCI Heart Disease and Adult Income) and on a constructed dataset of 2,000 real film reviews into which a meaningless token is injected at four controlled strengths plus a no-signal control. An LLM stands in for the paper's crowd workers in its classifier-selection study. LIME recovers 97--100\% of the gold features of interpretable models, and the paper's 20 Newsgroups failure replicates closely: the original classifier falls from 94.7\% to 54.0\% on real-world pages. On new data, LIME exposes a model's reliance on a proxy for sex in Adult Income, and on the constructed data its weight tracks each model's measured reliance on the artefact ($r = 0.98$ and $0.94$). An LLM judge shown explanations in the format of the paper's crowd study picks the better classifier in 90\% of trials.
+\end{abstract}
+
+% =====================================================================
+\section{Description of the Paper and Justification}
+\label{sec:paper}
+
+\citet{ribeiro2016why}\footnote{\url{https://arxiv.org/abs/1602.04938}} propose LIME (Local Interpretable Model-agnostic Explanations). To explain a prediction for an input $x$, LIME draws perturbed copies of $x$ (for text, by deleting random subsets of its words), queries the black-box model on each, and fits a weighted sparse linear model in which perturbations closer to $x$ count more. The $K$ largest coefficients are the explanation: for example, the six words that most pushed a document towards ``Atheism''. Because LIME only calls the model's \tok{predict\_proba}, it works with any classifier. The paper also proposes SP-LIME, a submodular procedure that picks a small set of instances whose explanations together cover the most important features, so that a person can judge a whole model from a few examples.
+
+\paragraph{Evaluation framework.} The paper evaluates LIME in two stages. \emph{Simulated experiments} (\S5 of the paper) use classifiers whose true features are known. Sparse logistic regression and decision trees trained on books and DVD reviews use at most 10 features per instance, and LIME recovers over 90\% of them (recall), well above greedy, Parzen and random baselines. In simulated trust experiments, LIME identifies untrustworthy predictions with an $F_1$ of 91.8--96.7\% (Table~1 of the paper). \emph{Human experiments} (\S6) use 20 Newsgroups. An RBF-kernel SVM reaches 94.0\% on the test split but only 57.3\% on a religion dataset the authors collected from the web, because it relies on e-mail header words such as \tok{Posting} and \tok{Host}; a manually cleaned version reaches 88.6\% and 69.0\%. Shown six explanations of six words each, Mechanical Turk users picked the cleaned classifier 89\% of the time with SP-LIME and 75\% with random picks (Figure~9 of the paper). In an image study, trust in a deliberately flawed husky-versus-wolf classifier fell from 10 of 27 graduate students to 3 of 27 after they saw explanations.
+
+I test the paper's two claims: \textbf{C1}, LIME's explanations are \emph{faithful} to what the model actually uses; and \textbf{C2}, they let people \emph{detect untrustworthy models}, in particular reliance on spurious features.
+
+\paragraph{Justification.} The paper appeared at KDD 2016, rated A* in the CORE ranking. In Google Scholar's Data Mining \& Analysis subcategory, KDD ranks second overall by h5-index (124) and first among conferences, behind only the journal \emph{IEEE Transactions on Knowledge and Data Engineering}. The paper has 40,713 citations on Google Scholar (accessed 4 November 2026), and its library has about 12.1k GitHub stars and 1.85k forks. The project is feasible: the code is public and pip-installable, every original text dataset is available, and the experiments run on a laptop CPU. The proposal's feasibility check ran the library successfully on Python 3.11.9.
+
+% =====================================================================
+\section{Original Datasets}
+\label{sec:origdata}
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}lrl@{}}
+\toprule
+Dataset & Size & Used in paper for \\
+\midrule
+Books reviews & 2,000 & \S5 simulated \\
+DVD reviews & 2,000 & \S5 simulated \\
+20 Newsgroups (2 classes) & 1,796 & \S3, \S6 human \\
+Religion web pages & 1,638 & \S6 real-world test \\
+Husky/wolf images & 80 & \S6.4 (not replicated) \\
+\bottomrule
+\end{tabular}
+\caption{Original datasets. 20 Newsgroups: 1,079 training and 717 test posts. Religion: 819 pages per class after the authors' balancing.}
+\label{tab:origdata}
+\end{table}
+
+\begin{figure}[t]
+\centering\scriptsize
+\fbox{\parbox{0.95\columnwidth}{\ttfamily
+\textbf{\rmfamily 20 Newsgroups, test post 55 (atheism)}\\
+From: livesey@\ldots{} (Jon Livesey)\\
+Subject: Re: A Little Too Satanic\\
+Organization: sgi\\
+Lines: 56\\
+Distribution: world\\
+NNTP-Posting-Host: solntze.wpd.sgi.com\\[2pt]
+In article <\ldots>, mangoe@\ldots{} writes:\\
+|> Jon Livesey writes:\\
+|> |> What I said was that people took time to *copy* \ldots\\[4pt]
+\textbf{\rmfamily Books review, processed (word:count, label)}\\
+holes:1 must:1 top\_secret:1 he:1 center:1 other\_civilans:1 the\_pacific:1 the\_navy:1 a\_lot:1 \ldots{} \textless num\textgreater\_feet:2 \ldots{} \#label\#:positive\\[4pt]
+\textbf{\rmfamily Religion dataset (rendered web page)}\\
+The AHA Foundation \textbullet{} Home \textbullet{} About Us \textbullet{} Issues \ldots
+}}
+\caption{Format of the original text datasets (e-mail addresses masked here). Books and DVD reviews are distributed as bags of unigrams and bigrams with counts; the paper keeps only unigrams.}
+\label{fig:origsnippets}
+\end{figure}
+
+Table~\ref{tab:origdata} lists the datasets. The \textbf{books and DVD} reviews come from the multi-domain sentiment corpus of \citet{blitzer2007biographies}\footnote{\url{https://www.cs.jhu.edu/~mdredze/datasets/sentiment/}}: Amazon reviews, 1,000 positive and 1,000 negative per domain. They are distributed pre-tokenised as \tok{word:count} pairs (Figure~\ref{fig:origsnippets}). Following the authors' loader, I keep unigrams, repeat each word by its count, shuffle with seed 1 and split 80/20 (1,600/400). \textbf{20 Newsgroups} \citep{lang1995newsweeder}\footnote{\url{https://scikit-learn.org/stable/datasets/real_world.html\#newsgroups-dataset}} is restricted to \tok{alt.atheism} versus \tok{soc.religion.christian}. Each post is raw e-mail text whose header block (\tok{From}, \tok{Organization}, \tok{NNTP-Posting-Host}) correlates with the label without being about religion. The \textbf{religion dataset}\footnote{\url{https://github.com/marcotcr/lime-experiments}} contains DMOZ web pages rendered to text with \tok{w3m}: 819 atheism and 1,000 Christianity pages, balanced to 819 each. It provides a test set from a different source, so header shortcuts cannot help.
+
+% =====================================================================
+\section{Replication of the Original Work}
+\label{sec:replication}
+
+\subsection{Environment and approach}
+I used the authors' packaged library, \tok{lime} 0.2.0.1 (repository commit \tok{fd7eb2e}), with scikit-learn 1.9.0 and NumPy 2.4.6 on Python 3.11.9, in a virtual environment on macOS; the repository's Dockerfile and \tok{requirements.txt} pin Python and these library versions. \texttt{git status} on the clone confirms that the library source was not modified. The paper's own experiment code, in the same repository as the religion dataset (footnote~4), is frozen in Python 2 with scikit-learn 0.18 and \tok{numpy} 1.14, which no longer install on current systems, and it hard-codes a local data path. Instead of running it, I ported its logic to Python 3. This covered the classifiers, the gold-feature definitions, the greedy explainer and the data loading, and the scripts note each point where they follow the original. Two environment problems arose. macOS Python could not verify TLS certificates when downloading datasets, which I fixed by passing the \tok{certifi} bundle to every download. Running scripts from inside the cloned repository made Python import its newer source tree instead of the installed release, and that tree needs the extra dependency \tok{pyDOE2}; installing the release from PyPI and running from outside the clone avoids this. No change to LIME itself was needed. All code is in the project repository.\footnote{\url{https://github.com/Hassan-Shakoor/lime-reproducibility}}
+
+The project uses several techniques from the unit. Scripts download every dataset from the Internet and cache it, so results can be reproduced. Data analysis and generation are scripted end to end, with fixed seeds. A virtual environment and a Docker image capture the software environment, git and GitHub hold the code and data, and the report is written in \LaTeX.
+
+\subsection{Faithfulness (C1): recall of gold features}
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Data & Model & Random & Greedy & LIME \\
+\midrule
+Books & sparse LR & 20.3 (17.4) & 78.0 (64.3) & 100.0 (92.1) \\
+      & tree      & 20.0 (20.6) & 55.6 (37.0) & 98.5 (97.0) \\
+DVDs  & sparse LR & 20.2 (19.2) & 74.0 (63.4) & 100.0 (90.2) \\
+      & tree      & 18.4 (17.4) & 59.3 (47.6) & 97.4 (97.8) \\
+\bottomrule
+\end{tabular}
+\caption{Recall (\%) of gold features with $K=10$, averaged over the 350--372 test reviews per setting that have gold features: replicated value, with the paper's value (Figures~6--7) in brackets. Parzen is omitted because the library does not implement it.}
+\label{tab:recall}
+\end{table}
+
+As in \S5.2 of the paper, two classifiers are interpretable by construction. The first is L1-regularised logistic regression, with $C$ lowered from 0.1 in steps of 0.01 until no training review uses more than 10 non-zero-weight words. The second is a decision tree. A test review's gold features are its non-zero-weight words (LR) or the words tested on its decision path (tree). Each explainer returns $K = 10$ words, and recall is the share of gold words recovered. LIME uses K-Lasso feature selection, as in the paper, with 5,000 perturbation samples rather than the paper's 15,000, to fit a laptop budget.
+
+Table~\ref{tab:recall} shows that the claim replicates. LIME recovers 97.4--100\% of gold features, matching or exceeding the paper's values to within 0.4 points. The ordering LIME $>$ greedy $>$ random holds in all four settings, random stays near 20\% as in the paper, and greedy again falls well behind LIME on decision trees. Greedy scores higher than in the paper in all four settings (by 10.6--18.6 points), and LIME is higher on sparse LR (100\% versus 92.1\% and 90.2\%). For sparse LR the likely reason is the classifier, not the explainer. With current scikit-learn, the first $C$ meeting the 10-feature cap is 0.03, giving very sparse models: 7 (books) and 11 (DVD) non-zero words in total, with test accuracy 67\% and 65\%. Each review then contains only 2.3 and 3.0 gold words on average, an easier target than the paper's models probably posed. On decision trees, whose gold sets average 1.4--1.5 words, LIME and random track the paper closely; the higher greedy scores there suggest that our unpruned trees (depth 61) differ from the paper's. Other differences are fewer perturbation samples (5,000 rather than 15,000) and the library's default kernel width rather than a cross-validated one. I did not test their effect separately, but LIME's recall is not lower than the paper's despite them.
+
+\subsection{Detecting untrustworthy models (C2): 20 Newsgroups}
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& \multicolumn{2}{c}{20NG test} & \multicolumn{2}{c}{Religion} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Classifier & ours & paper & ours & paper \\
+\midrule
+Original SVM & 94.7 & 94.0 & 54.0 & 57.3 \\
+Cleaned SVM  & 80.3 & 88.6 & 57.7 & 69.0 \\
+Naive Bayes (original) & 95.4 & -- & 56.2 & -- \\
+\bottomrule
+\end{tabular}
+\caption{Accuracy (\%) on the 20 Newsgroups test split and on the religion dataset. ``Cleaned'' removes headers, footers and quotes, an automatic stand-in for the paper's manual feature removal.}
+\label{tab:religion}
+\end{table}
+
+I trained the paper's classifier type, an RBF-kernel SVM on TF-IDF features, with $C$ and $\gamma$ chosen by 3-fold cross-validation. The paper's cleaned classifier was made by manually deleting non-generalising words. I made mine reproducibly by stripping each post's header, signature and quoted lines with scikit-learn's \tok{remove} option. Table~\ref{tab:religion} compares the two. The central result replicates closely. The original SVM ($C = 100$, $\gamma = 0.1$) scores 94.7\% on the 20NG test split, against the paper's 94.0\%, but only 54.0\% on the religion pages, against 57.3\%. That 40.7-point collapse is close to the paper's 36.7, and the Naive Bayes classifier from the feasibility check behaves the same way. Cleaning moves in the paper's direction but by less: religion accuracy rises 3.7 points rather than 11.7, while 20NG accuracy falls 14.4 points rather than 5.4. Stripping whole header, signature and quote blocks removes topical content along with the artefacts (quoted replies often carry the argument), whereas the paper's manual cleaning removed only selected words. The cleaned classifier is therefore better in the real world, as in the paper, but by a smaller margin.
+
+LIME, with $K = 6$ as in \S6.2, was then run on 100 random test posts for both classifiers (96 for the cleaned one, as four posts are empty once headers are removed). For the original classifier, 14.3\% of all explanation words occur only in the post's header block, and 41\% of posts have at least one header-only word among their six. (For the cleaned classifier the figure is 0\% by construction, since its input contains no header.) A worked example shows the effect. In the proposal's feasibility run on test post~83, a Naive Bayes classifier predicted ``atheism'' with probability 0.576, and LIME's three strongest words were \tok{Host} ($-0.158$), \tok{Posting} ($-0.150$) and \tok{NNTP} ($-0.090$). All three are header words, and the negative weights mean each pushed the prediction away from ``christian''. The prediction is barely confident, and the explanation shows it rests on the message's routing metadata rather than on its content. This is exactly the failure LIME is meant to reveal.
+
+\paragraph{Where LIME works and where it does not.} The clearest success is test post 193, whose body is empty. The original classifier still predicts ``atheism'' with probability 0.98, and LIME attributes it to \tok{Host} (+0.23), \tok{Posting} (+0.22) and \tok{Nntp} (+0.18): the decision is visibly made by routing metadata. On post 79 the original classifier is correct because of \tok{uk}, \tok{Posting}, \tok{Host} and \tok{Nntp}, while the cleaned one is correct on content words such as \tok{religion}. Both are right, but only LIME shows that one of them is right for the wrong reason, which accuracy alone cannot reveal. Post 85 shows that the leakage is not limited to headers. The original classifier's top words are \tok{wwc}, \tok{saturn} and \tok{healta}, fragments of an e-mail address in the attribution line of a quoted reply (``In article \ldots{} writes:''). LIME's limits show on post 156, an atheist's post quoting Genesis. Both classifiers predict ``christian'' on \tok{God} and \tok{earth}, words a user would find reasonable, yet the prediction is wrong. LIME is faithful to the model rather than to the truth, so a plausible explanation does not certify a correct prediction.
+
+\paragraph{Not replicated.} The Mechanical Turk studies (\S6.2--6.3) would need paid crowd workers and ethics approval; \S\ref{sec:llmjudge} substitutes an LLM judge for \S6.2. The husky/wolf study (\S6.4) depends on 80 hand-picked images and a trained network that were not released, and it involved human subjects. The simulated trust experiments (\S5.3--5.4) reuse the same books/DVD models as \S5.2 and add no new data source, so I prioritised the real-world shift test above.
+
+% =====================================================================
+\section{Construction of New Data}
+\label{sec:newdata}
+
+Following the proposal, I applied LIME to two new existing datasets and built one new dataset. The proposal listed five candidates. Three were dropped: Credit Card Fraud and Jigsaw Toxic Comments need a Kaggle account and licence acceptance that a marker could not reproduce automatically, and IMDB is a large download whose sentiment task overlaps with the constructed data.
+
+\paragraph{Heart Disease (Cleveland).} This UCI dataset \citep{detrano1989international}\footnote{\url{https://archive.ics.uci.edu/dataset/45/heart+disease}} has 303 patients and 13 clinical attributes, distributed as comma-separated values with \tok{?} for missing entries (Figure~\ref{fig:newsnippets}). Six values were missing (4 in \tok{ca}, 2 in \tok{thal}) and were median-imputed. The 0--4 severity target was binarised to absent (164) versus present (139). Seven attributes are categorical codes (\tok{sex}, chest-pain type \tok{cp}, \tok{fbs}, \tok{restecg}, \tok{exang}, \tok{slope}, \tok{thal}) and were declared as such to LIME, so that explanations read ``\tok{cp=4}'' rather than as a threshold on a code number.
+
+\paragraph{Adult Income.} The UCI Adult census extract \citep{kohavi1996scaling}\footnote{\url{https://archive.ics.uci.edu/dataset/2/adult}} predicts whether income exceeds \$50K. After merging the train and test files and dropping rows with missing values, 45,222 people remain (24.8\% positive). I dropped \tok{fnlwgt}, a census sampling weight rather than a property of the person, and integer-coded and declared the eight categorical attributes. The dataset contains the sensitive attributes \tok{sex} and \tok{race}, plus \tok{relationship}, which encodes sex through ``Husband''/``Wife''. It therefore tests C2 in a fairness setting: does LIME show when a model leans on protected attributes?
+
+\paragraph{Constructed dataset: real reviews with a controlled artefact.} The update presentation used 300 templated sentences; following its feedback, the final dataset uses real text. The base corpus is the polarity dataset v2.0 of \citet{pang2004sentimental}\footnote{\url{https://www.cs.cornell.edu/people/pabo/movie-review-data/}}: 2,000 IMDb film reviews, 1,000 positive and 1,000 negative, labelled from the reviewers' star ratings and averaging about 700 words. Into these I inject a spurious feature whose presence and strength are known exactly, which the paper's 20 Newsgroups headers do not allow. For each of five seeds, a stratified 80/20 split is drawn, and the meaningless token \tok{zzqref} is appended as a final line, like a forum signature, to a chosen share of reviews in both train and test. There are five conditions (Table~\ref{tab:conditions}). In the four \emph{negative} conditions the token appears only in negative reviews, in 100\%, 75\%, 50\% or 25\% of them, so it predicts the label with decreasing coverage. In the \emph{control} it appears in half of all reviews independent of label, so it carries no signal. This gives $5\times5 = 25$ dataset versions. A manifest of 50,000 rows records every review's split and injection status, and the seed-0 versions are stored in full in the repository, with a datasheet in the style of \citet{gebru2021datasheets}.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Condition & neg.\ & pos.\ & P(neg $\mid$ token) \\
+\midrule
+neg100 & 100\% & 0\% & 1.0 \\
+neg75 & 75\% & 0\% & 1.0 \\
+neg50 & 50\% & 0\% & 1.0 \\
+neg25 & 25\% & 0\% & 1.0 \\
+control & 50\% & 50\% & 0.5 \\
+\bottomrule
+\end{tabular}
+\caption{Injection conditions: share of negative and positive reviews carrying the token, applied identically to train and test splits.}
+\label{tab:conditions}
+\end{table}
+
+\begin{figure}[t]
+\centering\scriptsize
+\fbox{\parbox{0.95\columnwidth}{\ttfamily\raggedright
+\textbf{\rmfamily Heart Disease (one row, target last)}\\
+63.0,1.0,1.0,145.0,233.0,1.0,2.0,\allowbreak 150.0,0.0,2.3,3.0,0.0,6.0,0\\[4pt]
+\textbf{\rmfamily Adult Income (one row)}\\
+39, State-gov, 77516, Bachelors, 13, Never-married, Adm-clerical, Not-in-family, White, Male, 2174, 0, 40, United-States, {<=}50K\\[4pt]
+\textbf{\rmfamily Constructed review, neg100 (end of text)}\\
+\ldots{} whatever . . . skip it ! where's joblo coming from ?\\
+a nightmare of elm street 3 ( 7/10 ) - blair witch 2 ( 7/10 ) - \ldots{} - stir of echoes ( 8/10 )\\
+zzqref
+}}
+\caption{Snippets of the new data. The constructed review (\tok{cv000\_29416}, negative) already ends with the reviewer's signature line of ratings, a natural artefact of the kind the injected token imitates.}
+\label{fig:newsnippets}
+\end{figure}
+
+\paragraph{Annotation and data quality.} No new human labels were needed: the sentiment labels are the original corpus's rating-derived labels, and the injection adds a token without altering any review text, so the labels remain valid by construction. The constructed data thus matches the original reviews in quality and exceeds them in one respect: the ground truth about the spurious feature is known, rather than inferred as it is with the 20 Newsgroups headers.
+
+% =====================================================================
+\section{Results on New Data}
+\label{sec:results}
+
+\subsection{Heart Disease and Adult Income}
+
+Both datasets use a random forest, with five stratified 80/20 splits (seeds 0--4). For every explained test instance (all 61 test patients for Heart Disease; 200 people for Adult), I record which features fall in LIME's top five. Two checks follow. \emph{Aggregate faithfulness}: does the frequency with which features appear in local explanations agree with the forest's global permutation importance (Spearman $\rho$)? \emph{Stability}: for 20 instances, LIME is rerun with five different sampling seeds on the same model; I report the mean pairwise Jaccard overlap of the top-five sets and how often each rerun's top feature agrees with the first run's (measured on the seed-0 split).
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/tabular.pdf}
+\caption{How often the eight most frequent features appear in LIME's top five, averaged over five splits (error bars: sd). Titles give the Spearman correlation with permutation importance.}
+\label{fig:tabular}
+\end{figure*}
+
+\paragraph{Heart Disease.} The forest reaches $85.2 \pm 2.7\%$ accuracy (range 82.0--90.2\%). The single split shown in the project update (91.8\%, a different random split) lies above this range, which illustrates why the final evaluation uses five. LIME's explanations are dominated by established clinical markers: the number of vessels coloured by fluoroscopy (\tok{ca}, in 100\% of top-five lists), the thallium stress test (\tok{thal}, 92.5\%) and chest-pain type (\tok{cp}, 71.1\%). Age and cholesterol almost never appear (0\% and 0.3\%). Agreement with permutation importance is positive on average ($\rho = 0.48$) but varies widely across splits, from $-0.19$ to $0.84$. With only 61 test patients, permutation importance is itself noisy, and correlated features trade places between models: \tok{exang} appears in $56 \pm 42\%$ of lists depending on the split. Repeated LIME runs on the same patient overlap well (Jaccard 0.84) but name a different top feature one time in four (top-1 agreement 0.75), so a single explanation of a single patient should not be over-read.
+
+\paragraph{Adult Income.} The forest reaches $84.7 \pm 0.1\%$. Explanations agree well with permutation importance ($\rho = 0.64 \pm 0.06$) and are very stable (Jaccard 0.92, top-1 agreement 1.00). The most frequent features are \tok{capital-gain} (100\%), \tok{hours-per-week} (93.1\%) and \tok{marital-status} (79.9\%). The fairness finding is subtler than expected. The protected attributes themselves rarely appear: \tok{sex} in 1.1\% of explanations and \tok{race} in none. But \tok{relationship}, whose ``Husband'' and ``Wife'' values encode sex, appears in 65.9\%; in the example explanations, \tok{relationship=Husband} pushes predictions towards $>$\$50K. LIME thus exposes reliance on an attribute that partly encodes sex, which an audit checking only the \tok{sex} column would miss; this supports C2 in a setting the paper did not test. The attribute is confounded with marriage, and \tok{marital-status} (79.9\%) carries similar information, so LIME shows \emph{where} to look rather than proving discrimination. A model without \tok{sex}, \tok{race} and \tok{relationship} loses only about 0.25 points ($84.4 \pm 0.2\%$), though it can still use \tok{marital-status}.
+
+\subsection{Constructed dataset}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/constructed.pdf}
+\caption{Constructed dataset, binary bag-of-words versus TF-IDF models. (a, b) Share of injected test reviews in which LIME ranks the token first or in its top ten (mean $\pm$ sd over 5 seeds). (c) Each non-control run: the model's measured reliance on the token against LIME's mean weight for it (log scales).}
+\label{fig:constructed}
+\end{figure*}
+
+\input{constructed_results.tex}
+
+\subsection{LLM-as-judge}
+\label{sec:llmjudge}
+
+The paper's own human study (\S6.2) is replaced by an LLM judge, following the LLM-as-a-judge approach of \citet{zheng2023judging}; as argued in the proposal, this suits the subjective trust judgements but not the recall experiment, whose answer is computable. In each of 40 trials the judge, OpenAI's \tok{gpt-5-mini}, sees information in the same format as the paper's crowd workers: six documents, each with both classifiers' predictions and their six strongest words marked ``supports'' or ``opposes''. The judge is asked which classifier will be more accurate on web pages about religion. The six documents are chosen by SP-LIME or at random from a fresh pool of 50 explained test posts, and the two classifiers are randomly labelled A and B. The correct answer is the cleaned classifier, which our replication shows to be more accurate on the religion data (Table~\ref{tab:religion}).
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Pick method & LLM judge & 95\% CI & Humans \\
+\midrule
+Random (RP)     & 95.0 (19/20) & 76.4--99.1 & 75 \\
+Submodular (SP) & 85.0 (17/20) & 64.0--94.8 & 89 \\
+All trials      & 90.0 (36/40) & 76.9--96.0 & -- \\
+\bottomrule
+\end{tabular}
+\caption{Share of trials (\%) in which the judge chose the cleaned classifier, with Wilson 95\% intervals, against the paper's Mechanical Turk users (Figure~9 of \citealp{ribeiro2016why}).}
+\label{tab:judge}
+\end{table}
+
+Table~\ref{tab:judge} shows that the judge picked the cleaned classifier in 36 of 40 trials (90\%). Its accuracy was identical whichever label the cleaned classifier carried (18 of 20 as A and as B), so the result is not a position bias. This supports C2 with a non-human reader: from six explanations of six words, the judge identified the classifier that generalises better, even though the cleaned classifier is \emph{less} accurate on the held-out 20NG split (80.3\% versus 94.7\%) and only modestly better on the religion pages (57.7\% versus 54.0\%). Its stated reasons match the paper's account of why the original classifier fails. A typical rationale reads: ``Classifier A relies more on topical religious words (Christ, sin, God, believe, coming) while B leans on forum/metadata cues (Nntp, Host, Posting, user names, uk) that won't generalize to web pages.'' One result differs from the paper. Submodular pick did not help the judge (85\% versus 95\% for random picks), whereas it helped humans (89\% versus 75\%). With 20 trials per condition the intervals overlap widely, so the data show no detectable difference rather than a reversal. A plausible explanation is that SP helps people by covering the important features in few documents, saving reading effort, which matters little to a model that reads every word.
+
+The evaluation differs from the replicated study in five ways: one LLM instead of 100 crowd workers, so the variability of human judgement is absent; automatic rather than manual cleaning, which leaves a smaller real-world gap between the classifiers; pools of 50 drawn from the 96 posts explained for both classifiers, rather than the full test set; the judge sees a 200-character extract of each document's header-free body, so header words appear only in the explanations, rather than the full post; and the model accepts only its default sampling temperature (it rejected temperature 0), so a rerun may differ slightly. All 40 prompts and replies are saved in the repository, so the scoring can be reproduced exactly.
+
+% =====================================================================
+\section{Ethical Considerations}
+\label{sec:ethics}
+
+\paragraph{In the original paper.} The \S6 studies involved human participants: Mechanical Turk workers and 27 graduate students. The paper does not report ethics approval, consent procedures or worker pay. Under the Australian Code for the Responsible Conduct of Research \citep{nhmrc2018code} and the National Statement \citep{nhmrc2023national}, such studies need ethical review, informed consent and fair payment. The husky/wolf study was also deliberately deceptive: subjects were not told the classifier was built to fail. Deception can be justified in a debriefed, low-risk study, but the National Statement requires it to be explicitly approved and justified. The paper does model good practice in open science: it released its code, the religion dataset it collected and a usable library, which is what made this replication possible.
+
+\paragraph{In this project.} The \textbf{Heart Disease} data are real patient records. They were de-identified and released for research decades ago, but they remain health information, and the original patients could not have consented to every future use. A publication should use them only for methodological purposes, cite their provenance, and make no clinical claims: an 85\% accurate forest evaluated on 61 test patients says nothing about safe diagnosis. Sex is among the model's most frequent features (65.6\% of explanations), which may reflect real clinical risk but would need scrutiny before any use. The \textbf{Adult} data contain sex and race. My results show that explanations can surface a model's reliance on such attributes, and on proxies such as \tok{relationship}, which is useful for auditing. The 20 Newsgroups posts are public but contain real names and e-mail addresses, so Figure~\ref{fig:origsnippets} masks addresses. Explanations can also be gamed: \citet{slack2020fooling} build classifiers that behave unfairly yet produce innocent-looking LIME explanations. A clean explanation should therefore never be presented as proof of fairness (``fairwashing''). The \textbf{constructed} data add only a meaningless token to publicly released reviews, so the main obligations are honest documentation and attribution, which the datasheet covers. More broadly, the instability measured in \S\ref{sec:results} means a single explanation can mislead; responsible use reports variation across seeds rather than one convenient run. In line with the Code's emphasis on transparency, all code, generated data, seeds and results are public in the project repository. Generative AI assisted with code and drafting; every reported number was checked against the scripts' output files, including an independent review pass, and I read the cited works.
+
+% =====================================================================
+\section{Conclusions and Reflections}
+\label{sec:conclusion}
+
+Replication largely succeeded. The released library ran unmodified on current software once the authors' Python~2 experiment code was ported. The faithfulness result (C1) replicated, with LIME's recall of 97--100\% matching or exceeding the paper's. The paper's motivating failure replicated closely: an SVM that is 94.7\% accurate on 20 Newsgroups drops to 54.0\% on real-world pages, and LIME's explanations show why. Automatic cleaning helped less than the paper's manual cleaning, and the crowdsourced and image studies could not be repeated without paid participants or unreleased materials.
+
+On new data the claims generalise, with two caveats. In Adult Income, LIME exposed a model's reliance on a proxy for sex. In the controlled experiment, its weight on the injected token tracked each model's measured reliance ($r = 0.98$ and $0.94$ across strengths): it flagged the artefact strongly when the model depended on it and gave it little weight when the model did not. The caveats are that small datasets make individual explanations unstable (Heart Disease top-1 agreement 0.75), and that a faithful explanation can still look plausible for a wrong prediction. Finally, an LLM judge identified the better classifier from explanations in 90\% of trials, comparable to the paper's crowd workers (95\% versus their 75\% with random picks, 85\% versus 89\% with SP), though unlike them it did not benefit from submodular pick.
+
+\paragraph{Reflections.} The templated reviews of the project update made the artefact look more powerful than it is in real text. On real 700-word reviews, a TF-IDF model barely uses a perfectly predictive footer token, and LIME correctly reported weak influence. The \emph{model's} reliance, not the data's correlation, is what an explanation can be expected to reveal, and designing the experiment around measured reliance rather than injection rate was the most important change. Second, porting the authors' frozen code was faster and more informative than reviving its 2016 environment, but it means small numerical differences are unavoidable. Finally, an LLM judge is cheap and repeatable, but it is a model judging a model. Its agreement with the paper's humans is evidence about the judge as much as about LIME.
+
+\bibliography{custom}
+
+\end{document}

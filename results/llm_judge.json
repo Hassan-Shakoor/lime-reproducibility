@@ -1,0 +1,55 @@
+{
+  "human_paper_pct": {
+    "sp": 89.0,
+    "rp": 75.0
+  },
+  "by_pick": {
+    "rp": {
+      "n": 20,
+      "correct": 19,
+      "accuracy_pct": 95.0,
+      "wilson95": [
+        76.4,
+        99.1
+      ]
+    },
+    "sp": {
+      "n": 20,
+      "correct": 17,
+      "accuracy_pct": 85.0,
+      "wilson95": [
+        64.0,
+        94.8
+      ]
+    }
+  },
+  "by_position": {
+    "A": {
+      "n": 20,
+      "correct": 18,
+      "accuracy_pct": 90.0,
+      "wilson95": [
+        69.9,
+        97.2
+      ]
+    },
+    "B": {
+      "n": 20,
+      "correct": 18,
+      "accuracy_pct": 90.0,
+      "wilson95": [
+        69.9,
+        97.2
+      ]
+    }
+  },
+  "unparsed": 0,
+  "example_reasons": [
+    " Classifier A uses topical, semantic cues (God, Christianity, models, Jesus) while B depends on forum-specific artifacts (usernames, posting headers, site/location tokens) that won't generalize to web pages.",
+    " Classifier A relies more on semantic religious words (God, Christian, Paul, Mormon, verses, moral) while B leans on forum-specific tokens/names (EDU, posting, host, usernames), so A should generalize better to web pages.",
+    " Classifier A will generalize better because its explanations show reliance on semantic content words about faith/Scripture (God, Christian, NT, verse) while B heavily weights forum-specific artifacts (usernames, headers, Newsreader, posting/meta tokens) that won't transfer to web pages.",
+    " Classifier A relies more on topical religious words (Christ, sin, God, believe, coming) while B leans on forum/metadata cues (Nntp, Host, Posting, user names, uk) that won't generalize to web pages.",
+    " Classifier B relies heavily on forum-specific tokens (usernames, headers, newsgroup meta-words) that won't appear on web pages, whereas A uses more content words tied to religious topics and will generalize better.",
+    "Classifier B will generalize better because its explanations rely on topical content words (God, Christianity, believe, eternal) while A leans on forum-specific signals (Posting, Host, NNTP, user/group names) that won't appear on web pages."
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "neg100": {
+    "injected": 1000,
+    "injected_neg": 1000,
+    "injected_pos": 0,
+    "P(neg|token)": 1.0
+  },
+  "neg75": {
+    "injected": 750,
+    "injected_neg": 750,
+    "injected_pos": 0,
+    "P(neg|token)": 1.0
+  },
+  "neg50": {
+    "injected": 500,
+    "injected_neg": 500,
+    "injected_pos": 0,
+    "P(neg|token)": 1.0
+  },
+  "neg25": {
+    "injected": 250,
+    "injected_neg": 250,
+    "injected_pos": 0,
+    "P(neg|token)": 1.0
+  },
+  "control": {
+    "injected": 1000,
+    "injected_neg": 500,
+    "injected_pos": 500,
+    "P(neg|token)": 0.5
+  }
+}

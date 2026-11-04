@@ -1,0 +1,46 @@
+{
+  "paper": {
+    "original": {
+      "test_acc": 0.94,
+      "religion_acc": 0.573
+    },
+    "cleaned": {
+      "test_acc": 0.886,
+      "religion_acc": 0.69
+    }
+  },
+  "original": {
+    "params": {
+      "svc__C": 100,
+      "svc__gamma": 0.1
+    },
+    "test_acc": 0.9470013947001394,
+    "test_f1": 0.9539951573849879,
+    "religion_acc": 0.5396825396825397,
+    "train_seconds": 15.5
+  },
+  "cleaned": {
+    "params": {
+      "svc__C": 10,
+      "svc__gamma": 0.1
+    },
+    "test_acc": 0.803347280334728,
+    "test_f1": 0.8311377245508982,
+    "religion_acc": 0.5769230769230769,
+    "train_seconds": 9.3
+  },
+  "naive_bayes_original": {
+    "test_acc": 0.9539748953974896,
+    "test_f1": 0.9595092024539877,
+    "religion_acc": 0.5622710622710623
+  },
+  "lime": {
+    "K": 6,
+    "num_samples": 5000,
+    "n_docs": 100,
+    "header_word_share_original": 0.1433333333333333,
+    "header_word_share_cleaned": 0.0,
+    "docs_with_any_header_word_original": 0.41,
+    "docs_with_any_header_word_cleaned": 0.0
+  }
+}
