@@ -51,5 +51,22 @@
     " Classifier A relies more on topical religious words (Christ, sin, God, believe, coming) while B leans on forum/metadata cues (Nntp, Host, Posting, user names, uk) that won't generalize to web pages.",
     " Classifier B relies heavily on forum-specific tokens (usernames, headers, newsgroup meta-words) that won't appear on web pages, whereas A uses more content words tied to religious topics and will generalize better.",
     "Classifier B will generalize better because its explanations rely on topical content words (God, Christianity, believe, eternal) while A leans on forum-specific signals (Posting, Host, NNTP, user/group names) that won't appear on web pages."
-  ]
+  ],
+  "overall": {
+    "n": 40,
+    "correct": 36,
+    "accuracy_pct": 90.0,
+    "wilson95": [
+      76.9,
+      96.0
+    ],
+    "binom_p_vs_chance": 1.8570244719740003e-07
+  },
+  "sp_vs_rp_fisher_p": 0.6049896049896051,
+  "swapped": {
+    "n": 40,
+    "accuracy_pct": 87.5,
+    "consistent_pct": 82.5,
+    "correct_in_both_orders": 32
+  }
 }

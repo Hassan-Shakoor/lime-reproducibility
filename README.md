@@ -69,8 +69,15 @@ numbers exactly without an API key.
 python scripts/07_llm_judge.py build
 export OPENAI_API_KEY=...           # never commit this
 python scripts/07_llm_judge.py run --provider openai --model gpt-5-mini
+python scripts/07_llm_judge.py run --swapped --provider openai --model gpt-5-mini   # A/B swapped
 python scripts/07_llm_judge.py score
 ```
+
+`score` adds a binomial test against chance, Fisher's test of SP vs random
+pick, swap consistency (same trials with A and B swapped). An optional
+`human-sheet` step writes a blind labelling sheet; if `results/human_labels.csv`
+is filled in, `score` also reports Cohen's kappa between the human and the LLM
+(not done for the report).
 
 `--provider anthropic --model <model>` works the same way with
 `ANTHROPIC_API_KEY`. Without any key, paste each prompt from

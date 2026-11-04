@@ -43,6 +43,13 @@ B, POOL = 6, 50
 HUMAN = {"sp": 89.0, "rp": 75.0}
 PROMPTS = RESULTS / "llm_judge_prompts.jsonl"
 RESPONSES = RESULTS / "llm_judge_responses.jsonl"
+# Same 40 trials with labels A and B swapped (position-bias check, Week 9).
+PROMPTS_SWAPPED = RESULTS / "llm_judge_prompts_swapped.jsonl"
+RESPONSES_SWAPPED = RESULTS / "llm_judge_responses_swapped.jsonl"
+# Blind human labels for a subset of trials (human-LLM agreement, Week 9).
+HUMAN_SHEET = RESULTS / "human_judging_sheet.md"
+HUMAN_LABELS = RESULTS / "human_labels.csv"
+N_HUMAN = 20
 
 INSTRUCTIONS = """You are evaluating two text classifiers, A and B. Both were trained on \
 online discussion-forum posts to decide whether a document is about Christianity or about \
@@ -94,30 +101,56 @@ def build(args):
             for w, v in d[c]["words"]:
                 W[i, col[f"{c}:{w}"]] = abs(v)
     rng = np.random.RandomState(args.seed)
-    with open(PROMPTS, "w") as f:
+    k = len(docs[0]["original"]["words"])
+
+    def make_prompt(chosen, cleaned_is):
+        order = {"A": "cleaned", "B": "original"} if cleaned_is == "A" else {"A": "original", "B": "cleaned"}
+        parts = []
+        for n, i in enumerate(chosen, 1):
+            d = docs[i]
+            extract = " ".join(d["snippet_cleaned"].split())[:200]
+            parts.append(f"Document {n}: \"{extract}...\"\n"
+                         f"  Classifier A: {describe(d, order['A'])}\n"
+                         f"  Classifier B: {describe(d, order['B'])}")
+        return INSTRUCTIONS.format(b=B, k=k, body="\n\n".join(parts))
+
+    with open(PROMPTS, "w") as f, open(PROMPTS_SWAPPED, "w") as g:
         for t in range(args.trials):
             pick = "sp" if t % 2 == 0 else "rp"
             pool = rng.choice(len(docs), size=min(POOL, len(docs)), replace=False)
             chosen = ([pool[j] for j in submodular_pick(W[pool], B)] if pick == "sp"
                       else list(rng.choice(pool, size=B, replace=False)))
             cleaned_is = "A" if rng.rand() < 0.5 else "B"
-            order = {"A": "cleaned", "B": "original"} if cleaned_is == "A" else {"A": "original", "B": "cleaned"}
-            parts = []
-            for n, i in enumerate(chosen, 1):
-                d = docs[i]
-                extract = " ".join(d["snippet_cleaned"].split())[:200]
-                parts.append(f"Document {n}: \"{extract}...\"\n"
-                             f"  Classifier A: {describe(d, order['A'])}\n"
-                             f"  Classifier B: {describe(d, order['B'])}")
-            prompt = INSTRUCTIONS.format(b=B, k=len(docs[0]["original"]["words"]), body="\n\n".join(parts))
+            swapped = "B" if cleaned_is == "A" else "A"
+            ids = [int(docs[i]["doc_id"]) for i in chosen]
             f.write(json.dumps({"trial": t, "pick": pick, "correct": cleaned_is,
-                                "docs": [int(docs[i]["doc_id"]) for i in chosen], "prompt": prompt}) + "\n")
-    print(f"Wrote {args.trials} prompts to {PROMPTS}")
+                                "docs": ids, "prompt": make_prompt(chosen, cleaned_is)}) + "\n")
+            g.write(json.dumps({"trial": t, "pick": pick, "correct": swapped,
+                                "docs": ids, "prompt": make_prompt(chosen, swapped)}) + "\n")
+    print(f"Wrote {args.trials} prompts to {PROMPTS} and swapped copies to {PROMPTS_SWAPPED}")
+
+
+def human_sheet(args):
+    """Write the first N_HUMAN prompts, without answers, for blind human labelling."""
+    trials = [json.loads(l) for l in PROMPTS.read_text().splitlines()][:N_HUMAN]
+    with open(HUMAN_SHEET, "w") as f:
+        f.write("# Human judging sheet\n\nFor each trial, read the prompt and decide which "
+                "classifier (A or B) will be more accurate on the new web pages. Write your "
+                f"answers in `{HUMAN_LABELS.name}`. Do not open the prompts or responses files "
+                "before you finish: they contain the answers.\n\n")
+        for t in trials:
+            f.write(f"\n---\n\n## Trial {t['trial']}\n\n```text\n{t['prompt']}\n```\n")
+    if not HUMAN_LABELS.exists():
+        HUMAN_LABELS.write_text("trial,choice\n" + "".join(f"{t['trial']},\n" for t in trials))
+    print(f"Wrote {HUMAN_SHEET} and {HUMAN_LABELS}")
 
 
 def run(args):
-    trials = [json.loads(l) for l in PROMPTS.read_text().splitlines()]
-    done = {json.loads(l)["trial"] for l in RESPONSES.read_text().splitlines()} if RESPONSES.exists() else set()
+    prompts_file, responses_file = ((PROMPTS_SWAPPED, RESPONSES_SWAPPED) if args.swapped
+                                    else (PROMPTS, RESPONSES))
+    trials = [json.loads(l) for l in prompts_file.read_text().splitlines()]
+    done = ({json.loads(l)["trial"] for l in responses_file.read_text().splitlines() if l.strip()}
+            if responses_file.exists() else set())
     if args.provider == "anthropic":
         import anthropic
         client = anthropic.Anthropic()
@@ -140,7 +173,7 @@ def run(args):
                 print("Model rejects temperature=0; using its default temperature.")
                 r = client.chat.completions.create(model=args.model, messages=msgs)
             return r.choices[0].message.content or ""
-    with open(RESPONSES, "a") as f:
+    with open(responses_file, "a") as f:
         for t in trials:
             if t["trial"] in done:
                 continue
@@ -161,16 +194,41 @@ def wilson(k, n, z=1.96):
     return (round(100 * (c - h), 1), round(100 * (c + h), 1))
 
 
+def verdict(text):
+    first = text.strip().splitlines()[0] if text.strip() else ""
+    m = re.search(r"\b([AB])\b", first)
+    return m.group(1) if m else None
+
+
+def chose_cleaned(prompts_file, responses_file):
+    """trial -> True/False (picked the cleaned classifier), unparsed replies skipped."""
+    trials = {t["trial"]: t for t in map(json.loads, prompts_file.read_text().splitlines())}
+    out = {}
+    for line in responses_file.read_text().splitlines():
+        if line.strip():
+            r = json.loads(line)
+            v = verdict(r["response"])
+            if v:
+                out[r["trial"]] = v == trials[r["trial"]]["correct"]
+    return out
+
+
 def score(args):
+    from scipy.stats import binomtest, fisher_exact
+    from sklearn.metrics import cohen_kappa_score
+
     trials = {t["trial"]: t for t in map(json.loads, PROMPTS.read_text().splitlines())}
     out = {"human_paper_pct": HUMAN, "by_pick": {}, "by_position": {}, "unparsed": 0}
     rows = []
     for line in RESPONSES.read_text().splitlines():
+        if not line.strip():
+            continue
         r = json.loads(line)
-        m = re.search(r"\b([AB])\b", r["response"].strip().splitlines()[0] if r["response"].strip() else "")
-        if not m:
+        v = verdict(r["response"])
+        if not v:
             out["unparsed"] += 1
             continue
+        m = re.match("([AB])", v)
         t = trials[r["trial"]]
         rows.append({"pick": t["pick"], "position": t["correct"], "ok": m.group(1) == t["correct"],
                      "reason": " ".join(r["response"].strip().splitlines()[1:])[:300]})
@@ -181,19 +239,63 @@ def score(args):
                            "accuracy_pct": round(100 * float(np.mean(sub)), 1),
                            "wilson95": wilson(int(sum(sub)), len(sub))}
     out["example_reasons"] = [r["reason"] for r in rows[:6]]
-    print(json.dumps({k: out[k] for k in ("by_pick", "by_position", "unparsed")}, indent=2))
+
+    # Significance (Week 12): better than chance? SP vs RP different?
+    ok = [r["ok"] for r in rows]
+    out["overall"] = {"n": len(ok), "correct": int(sum(ok)),
+                      "accuracy_pct": round(100 * float(np.mean(ok)), 1),
+                      "wilson95": wilson(int(sum(ok)), len(ok)),
+                      "binom_p_vs_chance": float(binomtest(int(sum(ok)), len(ok), 0.5).pvalue)}
+    sp, rp = out["by_pick"].get("sp"), out["by_pick"].get("rp")
+    if sp and rp:
+        out["sp_vs_rp_fisher_p"] = float(fisher_exact(
+            [[rp["correct"], rp["n"] - rp["correct"]], [sp["correct"], sp["n"] - sp["correct"]]]).pvalue)
+
+    # Position bias (Week 9): same trials with A and B swapped.
+    llm = chose_cleaned(PROMPTS, RESPONSES)
+    if RESPONSES_SWAPPED.exists():
+        sw = chose_cleaned(PROMPTS_SWAPPED, RESPONSES_SWAPPED)
+        both = sorted(set(llm) & set(sw))
+        out["swapped"] = {
+            "n": len(both),
+            "accuracy_pct": round(100 * float(np.mean([sw[t] for t in both])), 1),
+            "consistent_pct": round(100 * float(np.mean([llm[t] == sw[t] for t in both])), 1),
+            "correct_in_both_orders": int(sum(llm[t] and sw[t] for t in both)),
+        }
+
+    # Human-LLM agreement (Week 9): Cohen's kappa on "picked the cleaned classifier".
+    if HUMAN_LABELS.exists():
+        human = {}
+        for line in HUMAN_LABELS.read_text().splitlines()[1:]:
+            t, _, c = line.partition(",")
+            c = c.strip().upper()
+            if c in ("A", "B"):
+                human[int(t)] = c == trials[int(t)]["correct"]
+        both = sorted(set(human) & set(llm))
+        if both:
+            h, l = [human[t] for t in both], [llm[t] for t in both]
+            raw = float(np.mean([a == b for a, b in zip(h, l)]))
+            kappa = cohen_kappa_score(h, l) if len(set(h + l)) > 1 else float("nan")
+            out["human"] = {"n": len(both),
+                            "human_accuracy_pct": round(100 * float(np.mean(h)), 1),
+                            "llm_accuracy_same_trials_pct": round(100 * float(np.mean(l)), 1),
+                            "raw_agreement_pct": round(100 * raw, 1),
+                            "cohen_kappa": None if kappa != kappa else round(float(kappa), 3)}
+
+    print(json.dumps({k: out[k] for k in out if k not in ("example_reasons", "human_paper_pct")}, indent=2))
     save_json(out, "llm_judge.json")
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("action", choices=["build", "run", "score"])
+    ap.add_argument("action", choices=["build", "run", "human-sheet", "score"])
     ap.add_argument("--trials", type=int, default=40)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--provider", choices=["anthropic", "openai"], default="openai")
     ap.add_argument("--model", default=os.environ.get("JUDGE_MODEL", "gpt-5-mini"))
+    ap.add_argument("--swapped", action="store_true", help="run the A/B-swapped prompts")
     args = ap.parse_args()
-    {"build": build, "run": run, "score": score}[args.action](args)
+    {"build": build, "run": run, "human-sheet": human_sheet, "score": score}[args.action](args)
 
 
 if __name__ == "__main__":
