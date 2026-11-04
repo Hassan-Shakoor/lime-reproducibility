@@ -14,7 +14,7 @@ python scripts/06_constructed_experiment.py --model tfidf    # ~6 min
 python scripts/06_constructed_experiment.py --model binary   # ~6 min
 python scripts/07_llm_judge.py build              # seconds
 # LLM judge needs an API key (see README):
-#   python scripts/07_llm_judge.py run --provider anthropic
+#   python scripts/07_llm_judge.py run --provider openai --model gpt-5-mini
 #   python scripts/07_llm_judge.py score
 python scripts/08_make_figures.py
 python scripts/09_find_examples.py
