@@ -18,6 +18,7 @@ the explanation words occur only in a post's header block.
 
 Outputs: results/20ng_religion.json, results/20ng_explanations.json
 """
+import utils.session
 import argparse
 import re
 import sys

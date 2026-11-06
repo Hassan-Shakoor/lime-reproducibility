@@ -11,6 +11,7 @@ report/*.out
 report/*.bbl
 report/*.blg
 report/*.synctex.gz
-.env
 *.key
 .Rhistory
+config.bat
+node_modules
